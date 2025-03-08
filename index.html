@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Drum Machine</title>
+  <style>
+    body {
+      background-color: #121212;
+      color: #e0e0e0;
+      font-family: 'Arial', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-image: linear-gradient(45deg, #111111 25%, #1a1a1a 25%, #1a1a1a 50%, #111111 50%, #111111 75%, #1a1a1a 75%, #1a1a1a 100%);
+      background-size: 40px 40px;
+    }
+    
+    .container {
+      text-align: center;
+      background-color: rgba(30, 30, 30, 0.8);
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+      border: 2px solid #444;
+      max-width: 800px;
+      width: 100%;
+    }
+    
+    h1 {
+      font-size: 3rem;
+      margin-bottom: 30px;
+      font-family: 'Arial Black', sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      color: #f8f8f8;
+      text-shadow: 0 0 10px rgba(0, 100, 255, 0.8), 0 0 20px rgba(0, 100, 255, 0.5);
+    }
+    
+    .drum-pads {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+    
+    .drum-pad {
+      height: 100px;
+      background: linear-gradient(145deg, #2a2a2a, #222);
+      color: #e0e0e0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.2rem;
+      font-weight: bold;
+      border: 2px solid #444;
+      cursor: pointer;
+      user-select: none;
+      border-radius: 5px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.2s;
+      text-transform: uppercase;
+    }
+    
+    .drum-pad:before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(50, 150, 255, 0.8), transparent);
+    }
+    
+    .drum-pad:hover {
+      background: linear-gradient(145deg, #333, #222);
+      box-shadow: 0 0 15px rgba(50, 150, 255, 0.5);
+    }
+    
+    .drum-pad:active, .drum-pad.active {
+      background: linear-gradient(145deg, #0066cc, #004499);
+      color: #fff;
+      transform: scale(0.95);
+      box-shadow: 0 0 20px rgba(50, 150, 255, 0.8);
+    }
+    
+    .controls {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      align-items: center;
+      margin-top: 20px;
+      border-top: 1px solid #444;
+      padding-top: 20px;
+    }
+    
+    .sequence-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 10px;
+      margin-bottom: 20px;
+    }
+    
+    .sequence-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+    
+    .sequence-label {
+      width: 80px;
+      text-align: right;
+      padding-right: 10px;
+      font-size: 14px;
+      text-transform: uppercase;
+    }
+    
+    .sequence-steps {
+      display: flex;
+      gap: 5px;
+    }
+    
+    .sequence-step {
+      width: 30px;
+      height: 30px;
+      background-color: #333;
+      border: 1px solid #555;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    
+    .sequence-step.active {
+      background-color: #0066cc;
+      box-shadow: 0 0 10px rgba(50, 150, 255, 0.5);
+    }
+    
+    .control-buttons {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .control-button {
+      padding: 10px 20px;
+      background: linear-gradient(145deg, #333, #222);
+      color: #e0e0e0;
+      border: 2px solid #444;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: all 0.2s;
+    }
+    
+    .control-button:hover {
+      background: linear-gradient(145deg, #444, #333);
+      box-shadow: 0 0 10px rgba(50, 150, 255, 0.5);
+    }
+    
+    .control-button:active {
+      transform: scale(0.95);
+      background: linear-gradient(145deg, #0066cc, #004499);
+      color: #fff;
+    }
+    
+    .tempo-control {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .tempo-display {
+      background-color: #222;
+      padding: 5px 10px;
+      border: 1px solid #444;
+      border-radius: 3px;
+      min-width: 50px;
+      text-align: center;
+    }
+    
+    #tempo-slider {
+      -webkit-appearance: none;
+      width: 200px;
+      height: 10px;
+      background: #333;
+      border-radius: 5px;
+      outline: none;
+    }
+    
+    #tempo-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      background: #0066cc;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+    
+    #tempo-slider::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      background: #0066cc;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+    
+    .playhead {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 30px;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.1);
+      pointer-events: none;
+      transition: transform 0.1s ease;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>My Drum Machine</h1>
+    <div class="drum-pads">
+      <div class="drum-pad" data-sound="kick">Kick</div>
+      <div class="drum-pad" data-sound="snare">Snare</div>
+      <div class="drum-pad" data-sound="hihat">Hi-Hat</div>
+      <div class="drum-pad" data-sound="clap">Clap</div>
+      <div class="drum-pad" data-sound="cymbal">Cymbal</div>
+      <div class="drum-pad" data-sound="tom">Tom</div>
+    </div>
+    
+    <div class="controls">
+      <div class="sequence-container">
+        <div class="sequence-row">
+          <div class="sequence-label">Kick</div>
+          <div class="sequence-steps" data-sound="kick">
+            <div class="sequence-step" data-step="0"></div>
+            <div class="sequence-step" data-step="1"></div>
+            <div class="sequence-step" data-step="2"></div>
+            <div class="sequence-step" data-step="3"></div>
+            <div class="sequence-step" data-step="4"></div>
+            <div class="sequence-step" data-step="5"></div>
+            <div class="sequence-step" data-step="6"></div>
+            <div class="sequence-step" data-step="7"></div>
+          </div>
+        </div>
+        <div class="sequence-row">
+          <div class="sequence-label">Snare</div>
+          <div class="sequence-steps" data-sound="snare">
+            <div class="sequence-step" data-step="0"></div>
+            <div class="sequence-step" data-step="1"></div>
+            <div class="sequence-step" data-step="2"></div>
+            <div class="sequence-step" data-step="3"></div>
+            <div class="sequence-step" data-step="4"></div>
+            <div class="sequence-step" data-step="5"></div>
+            <div class="sequence-step" data-step="6"></div>
+            <div class="sequence-step" data-step="7"></div>
+          </div>
+        </div>
+        <div class="sequence-row">
+          <div class="sequence-label">Hi-Hat</div>
+          <div class="sequence-steps" data-sound="hihat">
+            <div class="sequence-step" data-step="0"></div>
+            <div class="sequence-step" data-step="1"></div>
+            <div class="sequence-step" data-step="2"></div>
+            <div class="sequence-step" data-step="3"></div>
+            <div class="sequence-step" data-step="4"></div>
+            <div class="sequence-step" data-step="5"></div>
+            <div class="sequence-step" data-step="6"></div>
+            <div class="sequence-step" data-step="7"></div>
+          </div>
+        </div>
+        <div class="sequence-row">
+          <div class="sequence-label">Clap</div>
+          <div class="sequence-steps" data-sound="clap">
+            <div class="sequence-step" data-step="0"></div>
+            <div class="sequence-step" data-step="1"></div>
+            <div class="sequence-step" data-step="2"></div>
+            <div class="sequence-step" data-step="3"></div>
+            <div class="sequence-step" data-step="4"></div>
+            <div class="sequence-step" data-step="5"></div>
+            <div class="sequence-step" data-step="6"></div>
+            <div class="sequence-step" data-step="7"></div>
+          </div>
+        </div>
+        <div class="sequence-row">
+          <div class="sequence-label">Cymbal</div>
+          <div class="sequence-steps" data-sound="cymbal">
+            <div class="sequence-step" data-step="0"></div>
+            <div class="sequence-step" data-step="1"></div>
+            <div class="sequence-step" data-step="2"></div>
+            <div class="sequence-step" data-step="3"></div>
+            <div class="sequence-step" data-step="4"></div>
+            <div class="sequence-step" data-step="5"></div>
+            <div class="sequence-step" data-step="6"></div>
+            <div class="sequence-step" data-step="7"></div>
+          </div>
+        </div>
+        <div class="sequence-row">
+          <div class="sequence-label">Tom</div>
+          <div class="sequence-steps" data-sound="tom">
+            <div class="sequence-step" data-step="0"></div>
+            <div class="sequence-step" data-step="1"></div>
+            <div class="sequence-step" data-step="2"></div>
+            <div class="sequence-step" data-step="3"></div>
+            <div class="sequence-step" data-step="4"></div>
+            <div class="sequence-step" data-step="5"></div>
+            <div class="sequence-step" data-step="6"></div>
+            <div class="sequence-step" data-step="7"></div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="tempo-control">
+        <span>BPM:</span>
+        <input type="range" id="tempo-slider" min="60" max="200" value="120">
+        <div class="tempo-display">120</div>
+      </div>
+      
+      <div class="control-buttons">
+        <button class="control-button" id="play-button">Play</button>
+        <button class="control-button" id="stop-button">Stop</button>
+        <button class="control-button" id="clear-button">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Create AudioContext for Web Audio API
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    
+    // Generate sounds with Web Audio API instead of loading external files
+    const soundBuffers = {};
+    
+    // Create kick drum sound
+    function createKickDrum() {
+      const oscillator = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      oscillator.connect(gain);
+      gain.connect(audioContext.destination);
+      
+      oscillator.frequency.setValueAtTime(150, audioContext.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+      gain.gain.setValueAtTime(1, audioContext.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.3);
+    }
+    
+    // Create snare drum sound
+    function createSnareDrum() {
+      const noise = audioContext.createBufferSource();
+      const noiseBuffer = audioContext.createBuffer(1, audioContext.sampleRate * 0.2, audioContext.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      
+      for (let i = 0; i < noiseBuffer.length; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+      
+      noise.buffer = noiseBuffer;
+      
+      const noiseFilter = audioContext.createBiquadFilter();
+      noiseFilter.type = 'highpass';
+      noiseFilter.frequency.value = 1000;
+      
+      const noiseGain = audioContext.createGain();
+      noiseGain.gain.setValueAtTime(1, audioContext.currentTime);
+      noiseGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+      
+      noise.connect(noiseFilter);
+      noiseFilter.connect(noiseGain);
+      noiseGain.connect(audioContext.destination);
+      
+      noise.start(audioContext.currentTime);
+    }
+    
+    // Create hi-hat sound
+    function createHiHat() {
+      const noise = audioContext.createBufferSource();
+      const noiseBuffer = audioContext.createBuffer(1, audioContext.sampleRate * 0.1, audioContext.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      
+      for (let i = 0; i < noiseBuffer.length; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+      
+      noise.buffer = noiseBuffer;
+      
+      const noiseFilter = audioContext.createBiquadFilter();
+      noiseFilter.type = 'highpass';
+      noiseFilter.frequency.value = 7000;
+      
+      const noiseGain = audioContext.createGain();
+      noiseGain.gain.setValueAtTime(0.6, audioContext.currentTime);
+      noiseGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+      
+      noise.connect(noiseFilter);
+      noiseFilter.connect(noiseGain);
+      noiseGain.connect(audioContext.destination);
+      
+      noise.start(audioContext.currentTime);
+    }
+    
+    // Create clap sound
+    function createClap() {
+      const noise = audioContext.createBufferSource();
+      const noiseBuffer = audioContext.createBuffer(1, audioContext.sampleRate * 0.2, audioContext.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      
+      for (let i = 0; i < noiseBuffer.length; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+      
+      noise.buffer = noiseBuffer;
+      
+      const noiseFilter = audioContext.createBiquadFilter();
+      noiseFilter.type = 'bandpass';
+      noiseFilter.frequency.value = 1500;
+      
+      const noiseGain = audioContext.createGain();
+      noiseGain.gain.setValueAtTime(0.8, audioContext.currentTime + 0.01);
+      noiseGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+      
+      noise.connect(noiseFilter);
+      noiseFilter.connect(noiseGain);
+      noiseGain.connect(audioContext.destination);
+      
+      noise.start(audioContext.currentTime);
+    }
+    
+    // Create cymbal sound
+    function createCymbal() {
+      const noise = audioContext.createBufferSource();
+      const noiseBuffer = audioContext.createBuffer(1, audioContext.sampleRate * 1, audioContext.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      
+      for (let i = 0; i < noiseBuffer.length; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+      
+      noise.buffer = noiseBuffer;
+      
+      const noiseFilter = audioContext.createBiquadFilter();
+      noiseFilter.type = 'highpass';
+      noiseFilter.frequency.value = 8000;
+      
+      const noiseGain = audioContext.createGain();
+      noiseGain.gain.setValueAtTime(0.5, audioContext.currentTime);
+      noiseGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1);
+      
+      noise.connect(noiseFilter);
+      noiseFilter.connect(noiseGain);
+      noiseGain.connect(audioContext.destination);
+      
+      noise.start(audioContext.currentTime);
+    }
+    
+    // Create tom sound
+    function createTom() {
+      const oscillator = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      oscillator.connect(gain);
+      gain.connect(audioContext.destination);
+      
+      oscillator.frequency.setValueAtTime(100, audioContext.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(30, audioContext.currentTime + 0.2);
+      gain.gain.setValueAtTime(0.8, audioContext.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.2);
+    }
+    
+    // Map sound names to functions
+    const soundGenerators = {
+      kick: createKickDrum,
+      snare: createSnareDrum,
+      hihat: createHiHat,
+      clap: createClap,
+      cymbal: createCymbal,
+      tom: createTom
+    };
+    
+    // Sequencer state
+    let isPlaying = false;
+    let currentStep = 0;
+    let tempo = 120;
+    let sequenceInterval;
+    
+    // DOM Elements
+    const drumPads = document.querySelectorAll('.drum-pad');
+    const sequenceSteps = document.querySelectorAll('.sequence-step');
+    const playButton = document.getElementById('play-button');
+    const stopButton = document.getElementById('stop-button');
+    const clearButton = document.getElementById('clear-button');
+    const tempoSlider = document.getElementById('tempo-slider');
+    const tempoDisplay = document.querySelector('.tempo-display');
+    
+    // Setup drum pad triggers
+    drumPads.forEach(pad => {
+      pad.addEventListener('click', () => {
+        const sound = pad.getAttribute('data-sound');
+        playSound(sound);
+        
+        // Visual feedback
+        pad.classList.add('active');
+        setTimeout(() => {
+          pad.classList.remove('active');
+        }, 100);
+      });
+    });
+    
+    // Setup sequence step toggles
+    sequenceSteps.forEach(step => {
+      step.addEventListener('click', () => {
+        step.classList.toggle('active');
+      });
+    });
+    
+    // Function to play a sound
+    function playSound(sound) {
+      // Resume audio context if suspended (browser autoplay policy)
+      if (audioContext.state === 'suspended') {
+        audioContext.resume();
+      }
+      
+      if (soundGenerators[sound]) {
+        soundGenerators[sound]();
+      }
+    }
+    
+    // Setup play/stop functionality
+    playButton.addEventListener('click', startSequencer);
+    stopButton.addEventListener('click', stopSequencer);
+    
+    // Clear button functionality
+    clearButton.addEventListener('click', () => {
+      sequenceSteps.forEach(step => {
+        step.classList.remove('active');
+      });
+    });
+    
+    // Tempo control
+    tempoSlider.addEventListener('input', () => {
+      tempo = parseInt(tempoSlider.value);
+      tempoDisplay.textContent = tempo;
+      
+      if (isPlaying) {
+        stopSequencer();
+        startSequencer();
+      }
+    });
+    
+    // Metal-styled presets
+    function loadMetalPreset() {
+      // Clear existing pattern
+      sequenceSteps.forEach(step => {
+        step.classList.remove('active');
+      });
+      
+      // Set a typical metal pattern
+      // Kick drum pattern (typical metal double bass)
+      const kickSteps = document.querySelectorAll('.sequence-steps[data-sound="kick"] .sequence-step');
+      kickSteps[0].classList.add('active');
+      kickSteps[2].classList.add('active');
+      kickSteps[4].classList.add('active');
+      kickSteps[6].classList.add('active');
+      
+      // Snare on 2 and 4
+      const snareSteps = document.querySelectorAll('.sequence-steps[data-sound="snare"] .sequence-step');
+      snareSteps[2].classList.add('active');
+      snareSteps[6].classList.add('active');
+      
+      // Hi-hat pattern
+      const hihatSteps = document.querySelectorAll('.sequence-steps[data-sound="hihat"] .sequence-step');
+      hihatSteps[0].classList.add('active');
+      hihatSteps[1].classList.add('active');
+      hihatSteps[2].classList.add('active');
+      hihatSteps[3].classList.add('active');
+      hihatSteps[4].classList.add('active');
+      hihatSteps[5].classList.add('active');
+      hihatSteps[6].classList.add('active');
+      hihatSteps[7].classList.add('active');
+      
+      // Occasional cymbal crash
+      const cymbalSteps = document.querySelectorAll('.sequence-steps[data-sound="cymbal"] .sequence-step');
+      cymbalSteps[0].classList.add('active');
+      
+      // Set metal tempo
+      tempo = 160;
+      tempoSlider.value = tempo;
+      tempoDisplay.textContent = tempo;
+    }
+    
+    // Load metal preset on start
+    loadMetalPreset();
+    
+    function startSequencer() {
+      if (isPlaying) return;
+      
+      // Resume audio context if suspended (browser autoplay policy)
+      if (audioContext.state === 'suspended') {
+        audioContext.resume();
+      }
+      
+      isPlaying = true;
+      currentStep = 0;
+      
+      // Calculate interval in milliseconds based on tempo (BPM)
+      const interval = (60 / tempo) * 1000 / 2; // sixteenth notes
+      
+      sequenceInterval = setInterval(() => {
+        // Play sounds for current step
+        document.querySelectorAll(`.sequence-step[data-step="${currentStep}"].active`).forEach(activeStep => {
+          const soundRow = activeStep.parentElement;
+          const sound = soundRow.getAttribute('data-sound');
+          playSound(sound);
+          
+          // Visual feedback for pad
+          const pad = document.querySelector(`.drum-pad[data-sound="${sound}"]`);
+          pad.classList.add('active');
+          setTimeout(() => {
+            pad.classList.remove('active');
+          }, 100);
+        });
+        
+        // Highlight current step
+        document.querySelectorAll(`.sequence-step[data-step="${currentStep}"]`).forEach(step => {
+          step.style.boxShadow = '0 0 10px rgba(255, 255, 255, 0.5)';
+          setTimeout(() => {
+            step.style.boxShadow = '';
+          }, interval * 0.9);
+        });
+        
+        // Move to next step
+        currentStep = (currentStep + 1) % 8;
+      }, interval);
+    }
+    
+    function stopSequencer() {
+      isPlaying = false;
+      clearInterval(sequenceInterval);
+    }
+    
+    // Optional: Add keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        if (isPlaying) {
+          stopSequencer();
+        } else {
+          startSequencer();
+        }
+      }
+    });
+  </script>
+</body>
+</html>
